@@ -1,1 +1,27 @@
-
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Datalake Liveness</string>
+    <string name="camera_permission_required">Camera permission is required for face verification</string>
+    <string name="mark_attendance">Mark Attendance</string>
+    <string name="sync_to_cloud">Sync to Cloud</string>
+    <string name="cancel">Cancel</string>
+    <string name="done">Done</string>
+    <string name="retry">Retry</string>
+    <string name="success">Success</string>
+    <string name="failed">Failed</string>
+    <string name="face_detection_title">Face Verification</string>
+    <string name="liveness_instruction">Please blink or smile to verify liveness</string>
+    <string name="position_face">Position your face in the frame</string>
+    <string name="attendance_recorded">Attendance recorded offline</string>
+    <string name="sync_complete">Sync Complete</string>
+    <string name="sync_failed">Sync Failed</string>
+    <string name="offline_records">Offline Records</string>
+    <string name="total_records">Total Records</string>
+    <string name="pending_sync">Pending Sync</string>
+    <string name="model_size">Model Size</string>
+    <string name="processing_time">Processing Time</string>
+    <string name="liveness_method">Liveness Method</string>
+    <string name="mb">MB</string>
+    <string name="less_than_1_sec">&lt;1 second</string>
+    <string name="blink_smile">Blink + Smile</string>
+</resources>
