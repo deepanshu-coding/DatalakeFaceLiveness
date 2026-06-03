@@ -1,11 +1,19 @@
 import * as faceapi from '@vladmandic/face-api';
 import RNFS from 'react-native-fs';
+import { Platform } from 'react-native';
 
 export class FaceService {
   private modelsLoaded: boolean = false;
 
   async loadModels(): Promise<boolean> {
-    const modelPath = `${RNFS.MainBundlePath}/models`;
+    let modelPath: string;
+    
+    if (Platform.OS === 'android') {
+      modelPath = 'file:///android_asset/models/';
+    } else {
+      modelPath = `${RNFS.MainBundlePath}/models`;
+    }
+    
     await faceapi.nets.tinyFaceDetector.loadFromUri(modelPath);
     await faceapi.nets.faceLandmark68TinyNet.loadFromUri(modelPath);
     await faceapi.nets.faceExpressionNet.loadFromUri(modelPath);
