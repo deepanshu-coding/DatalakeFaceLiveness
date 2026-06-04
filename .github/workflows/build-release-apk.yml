@@ -18,6 +18,11 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
       
+      - name: Install missing React Native dependencies
+        run: |
+          npm install --save-dev @react-native/metro-config
+          npm install --save-dev metro-react-native-babel-preset
+      
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -67,14 +72,8 @@ jobs:
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
       
-      - name: Discover available tasks
+      - name: Build APK
         run: |
-          cd android
-          ./gradlew tasks --all
-      
-      - name: Build APK (React Native)
-        run: |
-          # Build from root directory for React Native
           npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
           cd android
           ./gradlew assembleRelease --no-daemon --stacktrace
