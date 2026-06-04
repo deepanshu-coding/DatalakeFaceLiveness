@@ -1,4 +1,40 @@
 {
   "name": "DatalakeFaceLiveness",
-  "displayName": "Datalake Liveness"
+  "displayName": "Datalake Liveness",
+  "expo": {
+    "name": "Datalake Liveness",
+    "slug": "datalake-face-liveness",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "bundleIdentifier": "com.datalake.faceliveness",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.datalake.faceliveness",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "permissions": ["CAMERA"],
+      "minSdkVersion": 26,
+      "targetSdkVersion": 33
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "afca2a4f-ee01-4be0-8d3d-8e7dc051611d"
+      }
+    }
+  }
 }
