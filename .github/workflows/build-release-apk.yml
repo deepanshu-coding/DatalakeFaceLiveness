@@ -23,17 +23,15 @@ jobs:
           distribution: 'temurin'
           java-version: 17
       
-      - name: Accept ALL Android SDK licenses FIRST (using pre-installed SDK)
-        run: |
-          # Use the pre-installed SDK manager before setup-android overwrites it
-          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
-      
-      - name: Setup Android SDK (now licenses are already accepted)
-        uses: android-actions/setup-android@v3
+      # THIS IS THE KEY FIX - Use Google's official action
+      - name: Set up Android SDK
+        uses: google/android-github-actions/setup-android-sdk@v1
         with:
-          accept-android-sdk-licenses: true
+          packages: |
+            platform-tools
+            platforms;android-34
+            build-tools;34.0.0
+          license-check: true
       
       - name: Generate keystore
         run: |
