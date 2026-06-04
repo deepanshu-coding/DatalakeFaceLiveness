@@ -1,0 +1,55 @@
+name: Build Release APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          
+      - run: npm ci --legacy-peer-deps
+      
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+      
+      - name: Generate keystore
+        run: |
+          cd android/app
+          keytool -genkeypair -v \
+            -keystore datalake.keystore \
+            -alias datalake \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass datalake123 \
+            -keypass datalake123 \
+            -dname "CN=Datalake, OU=Hackathon, O=Datalake, L=City, S=State, C=IN"
+      
+      - name: Create keystore.properties
+        run: |
+          cat > android/app/keystore.properties << EOF
+          storeFile=datalake.keystore
+          storePassword=datalake123
+          keyAlias=datalake
+          keyPassword=datalake123
+          EOF
+      
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease
+      
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: android/app/build/outputs/apk/release/*.apk
