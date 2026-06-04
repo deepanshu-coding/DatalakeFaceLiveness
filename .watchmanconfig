@@ -1,1 +1,2 @@
-
+# In project root, create .watchmanconfig
+echo '{"ignore_dirs": ["node_modules", ".git"]}' > .watchmanconfig
