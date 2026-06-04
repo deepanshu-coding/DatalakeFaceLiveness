@@ -9,7 +9,4 @@ target 'DatalakeFaceLiveness' do
   
   pod 'React-Codegen', :path => '../node_modules/react-native/ReactCommon'
   pod 'RCT-Folly', :podspec => '../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec'
-  
-  permissions_path = '../node_modules/react-native-permissions/ios'
-  pod 'Permission-Camera', :path => "#{permissions_path}/Camera"
 end
