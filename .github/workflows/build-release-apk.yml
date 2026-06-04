@@ -63,13 +63,10 @@ jobs:
       - name: Setup Gradle wrapper
         run: |
           cd android
-          if [ ! -f gradlew ]; then
-            mkdir -p gradle/wrapper
-            curl -L https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar -o gradle/wrapper/gradle-wrapper.jar
-            curl -L https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.properties -o gradle/wrapper/gradle-wrapper.properties
-            echo '#!/bin/bash' > gradlew
-            echo 'exec java -cp "gradle/wrapper/gradle-wrapper.jar" org.gradle.wrapper.GradleWrapperMain "$@"' >> gradlew
-          fi
+          # Remove placeholder if exists
+          rm -f gradlew
+          # Use gradle to generate wrapper properly
+          gradle wrapper --gradle-version 8.5
           chmod +x gradlew
       
       - name: Build APK
