@@ -26,10 +26,25 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
       
-      - name: Accept Android SDK licenses
+      - name: Accept licenses and install components
         run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          # Try both possible SDK locations
+          for SDK_PATH in "$ANDROID_HOME" "/usr/local/lib/android/sdk"; do
+            if [ -f "$SDK_PATH/cmdline-tools/latest/bin/sdkmanager" ]; then
+              echo "Using SDK at: $SDK_PATH"
+              yes | $SDK_PATH/cmdline-tools/latest/bin/sdkmanager --licenses
+              yes | $SDK_PATH/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+            fi
+          done
+      
+      - name: Create local.properties
+        run: |
+          if [ -d "$ANDROID_HOME" ]; then
+            echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          else
+            echo "sdk.dir=/usr/local/lib/android/sdk" > android/local.properties
+          fi
+          cat android/local.properties
       
       - name: Generate keystore
         run: |
@@ -57,7 +72,8 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew clean
+          ./gradlew assembleRelease --no-daemon --stacktrace
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
