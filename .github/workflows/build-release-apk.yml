@@ -67,24 +67,23 @@ jobs:
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
       
-      - name: List available tasks
+      - name: Discover available tasks
         run: |
           cd android
-          ./gradlew tasks --all | grep -i "release\|assemble\|bundle"
+          ./gradlew tasks --all
       
-      - name: Build APK
+      - name: Build APK (React Native)
         run: |
+          # Build from root directory for React Native
+          npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
           cd android
-          ./gradlew assembleRelease --no-daemon --stacktrace || \
-          ./gradlew :app:assembleRelease --no-daemon --stacktrace || \
-          ./gradlew :app:assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon --stacktrace
       
-      - name: Find and upload APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: datalake-liveness-release
           path: |
             android/app/build/outputs/apk/release/*.apk
-            android/app/build/outputs/apk/debug/*.apk
-            android/build/outputs/apk/**/*.apk
+            android/app/build/outputs/apk/release/*.aab
           retention-days: 30
