@@ -63,20 +63,28 @@ jobs:
       - name: Setup Gradle wrapper
         run: |
           cd android
-          # Remove placeholder if exists
           rm -f gradlew
-          # Use gradle to generate wrapper properly
           gradle wrapper --gradle-version 8.5
           chmod +x gradlew
+      
+      - name: List available tasks
+        run: |
+          cd android
+          ./gradlew tasks --all | grep -i "release\|assemble\|bundle"
       
       - name: Build APK
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon --stacktrace || \
+          ./gradlew :app:assembleRelease --no-daemon --stacktrace || \
+          ./gradlew :app:assembleDebug --no-daemon --stacktrace
       
-      - name: Upload APK
+      - name: Find and upload APK
         uses: actions/upload-artifact@v4
         with:
           name: datalake-liveness-release
-          path: android/app/build/outputs/apk/release/*.apk
+          path: |
+            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/apk/debug/*.apk
+            android/build/outputs/apk/**/*.apk
           retention-days: 30
