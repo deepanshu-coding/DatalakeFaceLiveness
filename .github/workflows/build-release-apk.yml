@@ -28,6 +28,23 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
       
+      - name: Install Metro dependencies
+        run: |
+          npm install --save-dev @react-native/metro-config
+          npm install --save-dev metro-react-native-babel-preset
+      
+      - name: Fix metro.config.js if needed
+        run: |
+          if grep -q "@react-native/metro-config" metro.config.js; then
+            echo "metro.config.js already configured correctly"
+          else
+            cat > metro.config.js << 'EOF'
+            const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+            const config = {};
+            module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+            EOF
+          fi
+      
       - name: Setup Android SDK
         run: |
           export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
@@ -42,15 +59,12 @@ jobs:
       - name: Setup Gradle Wrapper
         run: |
           cd android
-          # Remove existing corrupted files
           rm -f gradlew gradlew.bat
           rm -rf gradle/wrapper
           
-          # Download official Gradle wrapper
           mkdir -p gradle/wrapper
           curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar
           
-          # Create gradle-wrapper.properties
           cat > gradle/wrapper/gradle-wrapper.properties << 'EOL'
           distributionBase=GRADLE_USER_HOME
           distributionPath=wrapper/dists
@@ -59,12 +73,8 @@ jobs:
           zipStorePath=wrapper/dists
           EOL
           
-          # Download gradlew script
-          curl -L -o gradlew https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar
           curl -L -o gradlew https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradlew
           chmod +x gradlew
-          
-          # Download gradlew.bat for Windows
           curl -L -o gradlew.bat https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradlew.bat
       
       - name: Create settings.gradle
