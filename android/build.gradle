@@ -1,23 +1,31 @@
-buildscript {
-    ext {
-        buildToolsVersion = "33.0.0"
-        minSdkVersion = 26
-        compileSdkVersion = 33
-        targetSdkVersion = 33
+- name: Fix android/build.gradle
+  run: |
+    cat > android/build.gradle << 'EOF'
+    buildscript {
+        ext {
+            buildToolsVersion = "34.0.0"
+            minSdkVersion = 23
+            compileSdkVersion = 34
+            targetSdkVersion = 34
+            ndkVersion = "23.1.7779620"
+            kotlinVersion = "1.8.0"
+        }
+        repositories {
+            google()
+            mavenCentral()
+        }
+        dependencies {
+            classpath("com.android.tools.build:gradle:8.1.1")
+            classpath("com.facebook.react:react-native-gradle-plugin")
+            classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        }
     }
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath("com.android.tools.build:gradle:7.3.1")
-    }
-}
 
-allprojects {
-    repositories {
-        mavenCentral()
-        google()
-        maven { url 'https://www.jitpack.io' }
+    allprojects {
+        repositories {
+            google()
+            mavenCentral()
+            maven { url 'https://www.jitpack.io' }
+        }
     }
-}
+    EOF
