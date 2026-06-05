@@ -28,11 +28,6 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
       
-      - name: Install Metro dependencies
-        run: |
-          npm install --save-dev @react-native/metro-config
-          npm install --save-dev metro-react-native-babel-preset
-      
       - name: Setup Android SDK
         run: |
           export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
@@ -47,95 +42,14 @@ jobs:
       - name: Setup Gradle Wrapper
         run: |
           cd android
-          rm -f gradlew gradlew.bat
-          rm -rf gradle/wrapper
-          
-          mkdir -p gradle/wrapper
-          curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradle/wrapper/gradle-wrapper.jar
-          
-          cat > gradle/wrapper/gradle-wrapper.properties << 'EOL'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.0.2-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOL
-          
-          curl -L -o gradlew https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradlew
           chmod +x gradlew
-          curl -L -o gradlew.bat https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradlew.bat
-          
           cd ..
-      
-      - name: Create settings.gradle
-        run: |
-          cat > android/settings.gradle << 'EOL'
-          rootProject.name = 'DatalakeFaceLiveness'
-          apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
-          include ':app'
-          EOL
-          echo "✓ settings.gradle created"
-      
-      - name: Create root build.gradle
-        run: |
-          cat > android/build.gradle << 'EOF'
-          buildscript {
-              ext {
-                  buildToolsVersion = "34.0.0"
-                  minSdkVersion = 23
-                  compileSdkVersion = 34
-                  targetSdkVersion = 34
-                  ndkVersion = "23.1.7779620"
-                  kotlinVersion = "1.8.0"
-              }
-              repositories {
-                  google()
-                  mavenCentral()
-                  maven {
-                      url "$rootDir/../node_modules/react-native/android"
-                  }
-              }
-              dependencies {
-                  classpath("com.android.tools.build:gradle:8.1.1")
-                  classpath("com.facebook.react:react-native-gradle-plugin")
-                  classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-              }
-          }
-
-          allprojects {
-              repositories {
-                  google()
-                  mavenCentral()
-                  maven { url 'https://www.jitpack.io' }
-                  maven {
-                      url "$rootDir/../node_modules/react-native/android"
-                  }
-                  maven {
-                      url "$rootDir/../node_modules/jsc-android/dist"
-                  }
-              }
-          }
-          EOF
-          echo "✓ build.gradle created"
       
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
       
       - name: Create assets directory
         run: mkdir -p android/app/src/main/assets
-      
-      - name: Create metro.config.js if not exists
-        run: |
-          if [ ! -f metro.config.js ]; then
-            cat > metro.config.js << 'EOL'
-          const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
-          const config = {};
-          module.exports = mergeConfig(getDefaultConfig(__dirname), config);
-          EOL
-            echo "✓ metro.config.js created"
-          else
-            echo "✓ metro.config.js already exists"
-          fi
       
       - name: Create Keystore
         working-directory: android/app
@@ -153,25 +67,10 @@ jobs:
       - name: Create Keystore Properties
         working-directory: android/app
         run: |
-          cat > keystore.properties << 'EOL'
-          storeFile=datalake.keystore
-          storePassword=datalake123
-          keyAlias=datalake
-          keyPassword=datalake123
-          EOL
-      
-      - name: Ensure app/build.gradle has React plugin
-        run: |
-          if [ -f android/app/build.gradle ]; then
-            if ! grep -q "com.facebook.react" android/app/build.gradle; then
-              sed -i '1i apply plugin: "com.facebook.react"' android/app/build.gradle
-              echo "✓ Added React plugin to app/build.gradle"
-            else
-              echo "✓ React plugin already in app/build.gradle"
-            fi
-          else
-            echo "⚠️ android/app/build.gradle not found"
-          fi
+          echo "storeFile=datalake.keystore" > keystore.properties
+          echo "storePassword=datalake123" >> keystore.properties
+          echo "keyAlias=datalake" >> keystore.properties
+          echo "keyPassword=datalake123" >> keystore.properties
       
       - name: Bundle React Native app
         run: npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
@@ -180,17 +79,10 @@ jobs:
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew clean
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon
       
-      - name: Upload Release APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: android/app/build/outputs/apk/release/*.apk
-      
-      - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: android/app/build/outputs/apk/debug/*.apk
