@@ -28,7 +28,7 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
       
-      - name: Patch libraries with namespace
+      - name: Patch libraries for AGP 8.0 compatibility
         run: |
           # Patch react-native-fs
           FS_FILE="node_modules/react-native-fs/android/build.gradle"
@@ -45,6 +45,15 @@ jobs:
             if ! grep -q "namespace" "$SQLITE_FILE"; then
               sed -i '/android {/a\    namespace "org.pgsqlite"' "$SQLITE_FILE"
               echo "✓ Patched react-native-sqlite-storage"
+            fi
+          fi
+          
+          # Patch react-native-gesture-handler to enable BuildConfig
+          GESTURE_FILE="node_modules/react-native-gesture-handler/android/build.gradle"
+          if [ -f "$GESTURE_FILE" ]; then
+            if ! grep -q "buildConfig" "$GESTURE_FILE"; then
+              sed -i '/android {/a\    buildFeatures {\n        buildConfig true\n    }' "$GESTURE_FILE"
+              echo "✓ Patched react-native-gesture-handler"
             fi
           fi
           
