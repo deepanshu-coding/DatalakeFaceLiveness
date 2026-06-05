@@ -1,20 +1,7 @@
 const {getDefaultConfig} = require('@react-native/metro-config');
-const defaultConfig = getDefaultConfig(__dirname);
 
-module.exports = {
-  ...defaultConfig,
+module.exports = getDefaultConfig(__dirname, {
   resolver: {
-    ...defaultConfig.resolver,
-    assetExts: [...defaultConfig.resolver.assetExts, 'bin', 'model']
+    assetExts: ['bin', 'model'],
   },
-  transformer: {
-    ...defaultConfig.transformer,
-    babelTransformerPath: require.resolve('react-native-babel-transformer'),
-    getTransformOptions: async () => ({
-      transform: {
-        experimentalImportSupport: false,
-        inlineRequires: true,
-      },
-    }),
-  },
-};
+});
