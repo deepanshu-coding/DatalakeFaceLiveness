@@ -33,18 +33,6 @@ jobs:
           npm install --save-dev @react-native/metro-config
           npm install --save-dev metro-react-native-babel-preset
       
-      - name: Fix metro.config.js if needed
-        run: |
-          if grep -q "@react-native/metro-config" metro.config.js; then
-            echo "metro.config.js already configured correctly"
-          else
-            cat > metro.config.js << 'EOF'
-            const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
-            const config = {};
-            module.exports = mergeConfig(getDefaultConfig(__dirname), config);
-            EOF
-          fi
-      
       - name: Setup Android SDK
         run: |
           export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
@@ -56,67 +44,10 @@ jobs:
           echo "8933bad05af43bd7f4b3dfbb81832d9787e68977" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
           echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
       
-      - name: Setup Gradle Wrapper
+      - name: Setup Android project files
         run: |
-          cd android
-          rm -f gradlew gradlew.bat
-          rm -rf gradle/wrapper
-          
-          mkdir -p gradle/wrapper
-          curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar
-          
-          cat > gradle/wrapper/gradle-wrapper.properties << 'EOL'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOL
-          
-          curl -L -o gradlew https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradlew
-          chmod +x gradlew
-          curl -L -o gradlew.bat https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradlew.bat
-      
-      - name: Create settings.gradle
-        run: |
-          cat > android/settings.gradle << 'EOL'
-          rootProject.name = 'DatalakeFaceLiveness'
-          apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
-          include ':app'
-          includeBuild('../node_modules/@react-native/gradle-plugin')
-          EOL
-      
-      - name: Create root build.gradle
-        run: |
-          cat > android/build.gradle << 'EOL'
-          buildscript {
-              ext {
-                  buildToolsVersion = "34.0.0"
-                  minSdkVersion = 23
-                  compileSdkVersion = 34
-                  targetSdkVersion = 34
-                  ndkVersion = "25.1.8937393"
-                  kotlinVersion = "1.9.22"
-              }
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-              dependencies {
-                  classpath("com.android.tools.build:gradle:8.1.1")
-                  classpath("com.facebook.react:react-native-gradle-plugin")
-                  classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
-              }
-          }
-
-          allprojects {
-              repositories {
-                  google()
-                  mavenCentral()
-                  maven { url 'https://www.jitpack.io' }
-              }
-          }
-          EOL
+          chmod +x setup-android.sh
+          ./setup-android.sh
       
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
@@ -137,15 +68,21 @@ jobs:
       - name: Create Keystore Properties
         working-directory: android/app
         run: |
-          cat > keystore.properties << 'EOL'
-          storeFile=datalake.keystore
-          storePassword=datalake123
-          keyAlias=datalake
-          keyPassword=datalake123
-          EOL
+          echo "storeFile=datalake.keystore" > keystore.properties
+          echo "storePassword=datalake123" >> keystore.properties
+          echo "keyAlias=datalake" >> keystore.properties
+          echo "keyPassword=datalake123" >> keystore.properties
       
       - name: Create assets directory
         run: mkdir -p android/app/src/main/assets
+      
+      - name: Create simple metro.config.js if needed
+        run: |
+          if [ ! -f metro.config.js ]; then
+            echo "const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');" > metro.config.js
+            echo "const config = {};" >> metro.config.js
+            echo "module.exports = mergeConfig(getDefaultConfig(__dirname), config);" >> metro.config.js
+          fi
       
       - name: Bundle React Native app
         run: npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
