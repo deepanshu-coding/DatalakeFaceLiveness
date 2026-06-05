@@ -49,26 +49,42 @@ jobs:
           EOL
           cd ..
       
-      - name: Setup Android SDK with all licenses
+      - name: Setup Android SDK and accept licenses
         run: |
           export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
           export ANDROID_HOME=$ANDROID_SDK_ROOT
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           
+          # Accept all licenses non-interactively
+          if [ -f "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
+            yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          fi
+          
+          if [ -f "$ANDROID_SDK_ROOT/tools/bin/sdkmanager" ]; then
+            yes | $ANDROID_SDK_ROOT/tools/bin/sdkmanager --licenses || true
+          fi
+          
+          # Create license files as backup
           mkdir -p $ANDROID_SDK_ROOT/licenses
+          cat > $ANDROID_SDK_ROOT/licenses/android-sdk-license << 'EOF'
+          8933bad05af43bd7f4b3dfbb81832d9787e68977
+          d56f5187479451eabf01fb78af6dfcb131a6481e
+          EOF
           
-          # Android SDK license
-          echo "8933bad05af43bd7f4b3dfbb81832d9787e68977" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
-          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          cat > $ANDROID_SDK_ROOT/licenses/ndk-license << 'EOF'
+          24333f8a63b6825ea9c5514f83c2829b004d1fee
+          d56f5187479451eabf01fb78af6dfcb131a6481e
+          EOF
           
-          # NDK license
-          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > $ANDROID_SDK_ROOT/licenses/ndk-license
-          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/ndk-license
+          cat > $ANDROID_SDK_ROOT/licenses/cmake-license << 'EOF'
+          3b29df6267bb4c7c6dee91fbf36d9bee7560e9f3
+          d56f5187479451eabf01fb78af6dfcb131a6481e
+          EOF
           
-          # CMake license
-          echo "3b29df6267bb4c7c6dee91fbf36d9bee7560e9f3" > $ANDROID_SDK_ROOT/licenses/cmake-license
-          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/cmake-license
+          # Also create the license files with .old extension
+          cp $ANDROID_SDK_ROOT/licenses/android-sdk-license $ANDROID_SDK_ROOT/licenses/android-sdk-license.old || true
+          cp $ANDROID_SDK_ROOT/licenses/ndk-license $ANDROID_SDK_ROOT/licenses/ndk-license.old || true
       
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
@@ -100,7 +116,7 @@ jobs:
       - name: Build APK
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon --stacktrace
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
