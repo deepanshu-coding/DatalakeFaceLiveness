@@ -28,6 +28,11 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
       
+      - name: Install Metro dependencies
+        run: |
+          npm install --save-dev @react-native/metro-config
+          npm install --save-dev metro-react-native-babel-preset
+      
       - name: Setup Android SDK
         run: |
           export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
@@ -50,6 +55,21 @@ jobs:
       
       - name: Create assets directory
         run: mkdir -p android/app/src/main/assets
+      
+      - name: Create metro.config.js (simpler version)
+        run: |
+          cat > metro.config.js << 'EOF'
+          module.exports = {
+            transformer: {
+              getTransformOptions: async () => ({
+                transform: {
+                  experimentalImportSupport: false,
+                  inlineRequires: true,
+                },
+              }),
+            },
+          };
+          EOF
       
       - name: Create Keystore
         working-directory: android/app
