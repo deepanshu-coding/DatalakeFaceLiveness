@@ -28,10 +28,23 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
       
-      - name: Install Metro dependencies
+      - name: Install Metro and Babel dependencies
         run: |
           npm install --save-dev @react-native/metro-config
           npm install --save-dev metro-react-native-babel-preset
+          npm install --save-dev @babel/plugin-transform-runtime @babel/helpers
+      
+      - name: Fix Babel configuration
+        run: |
+          cat > babel.config.js << 'EOF'
+          module.exports = {
+            presets: ['module:metro-react-native-babel-preset'],
+            plugins: [
+              '@babel/plugin-transform-flow-strip-types',
+              '@babel/plugin-transform-runtime'
+            ]
+          };
+          EOF
       
       - name: Setup Android SDK
         run: |
@@ -56,7 +69,7 @@ jobs:
       - name: Create assets directory
         run: mkdir -p android/app/src/main/assets
       
-      - name: Create metro.config.js (simpler version)
+      - name: Create metro.config.js
         run: |
           cat > metro.config.js << 'EOF'
           module.exports = {
