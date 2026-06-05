@@ -28,36 +28,22 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
       
-      - name: Patch libraries for AGP 8.0 compatibility
+      - name: Patch react-native-gesture-handler
         run: |
-          # Patch react-native-fs
-          FS_FILE="node_modules/react-native-fs/android/build.gradle"
-          if [ -f "$FS_FILE" ]; then
-            if ! grep -q "namespace" "$FS_FILE"; then
-              sed -i '/android {/a\    namespace "com.rnfs"' "$FS_FILE"
-              echo "✓ Patched react-native-fs"
-            fi
-          fi
-          
-          # Patch react-native-sqlite-storage
-          SQLITE_FILE="node_modules/react-native-sqlite-storage/android/build.gradle"
-          if [ -f "$SQLITE_FILE" ]; then
-            if ! grep -q "namespace" "$SQLITE_FILE"; then
-              sed -i '/android {/a\    namespace "org.pgsqlite"' "$SQLITE_FILE"
-              echo "✓ Patched react-native-sqlite-storage"
-            fi
-          fi
-          
-          # Patch react-native-gesture-handler to enable BuildConfig
           GESTURE_FILE="node_modules/react-native-gesture-handler/android/build.gradle"
           if [ -f "$GESTURE_FILE" ]; then
-            if ! grep -q "buildConfig" "$GESTURE_FILE"; then
-              sed -i '/android {/a\    buildFeatures {\n        buildConfig true\n    }' "$GESTURE_FILE"
-              echo "✓ Patched react-native-gesture-handler"
-            fi
+            # Add buildFeatures right after android {
+            sed -i '/android {/a\    buildFeatures {\n        buildConfig true\n    }' "$GESTURE_FILE"
+            echo "✓ Patched react-native-gesture-handler"
+            
+            # Verify the patch
+            echo "Verifying patch:"
+            grep -A 5 "buildFeatures" "$GESTURE_FILE" || echo "Warning: buildFeatures not found"
+          else
+            echo "Error: File not found - $GESTURE_FILE"
+            ls -la node_modules/react-native-gesture-handler/android/
+            exit 1
           fi
-          
-          echo "Finished patching libraries"
       
       - name: Setup Android SDK
         run: |
