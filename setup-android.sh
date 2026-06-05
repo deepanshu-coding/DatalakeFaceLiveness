@@ -30,7 +30,7 @@ include ':app'
 includeBuild('../node_modules/@react-native/gradle-plugin')
 EOF
 
-# Create build.gradle
+# Create build.gradle with FIXED kotlin version
 cat > android/build.gradle << 'EOF'
 buildscript {
     ext {
@@ -48,7 +48,7 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:8.1.1")
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     }
 }
 
