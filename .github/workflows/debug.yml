@@ -1,0 +1,25 @@
+name: Debug Project Structure
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: List all files recursively
+        run: |
+          echo "=== Full Project Structure ==="
+          ls -la
+          echo ""
+          echo "=== Android Directory ==="
+          ls -la android/ || echo "android directory not found!"
+          echo ""
+          echo "=== Android App Directory ==="
+          ls -la android/app/ || echo "android/app directory not found!"
+          echo ""
+          echo "=== Available Gradle Tasks ==="
+          cd android && ./gradlew tasks --all || echo "Gradle wrapper not found!"
