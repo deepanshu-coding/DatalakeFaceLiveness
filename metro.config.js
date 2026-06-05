@@ -1,7 +1,10 @@
-const {getDefaultConfig} = require('@react-native/metro-config');
-
-module.exports = getDefaultConfig(__dirname, {
-  resolver: {
-    assetExts: ['bin', 'model'],
+module.exports = {
+  transformer: {
+    getTransformOptions: async () => ({
+      transform: {
+        experimentalImportSupport: false,
+        inlineRequires: true,
+      },
+    }),
   },
-});
+};
