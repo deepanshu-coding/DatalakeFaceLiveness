@@ -42,7 +42,24 @@ jobs:
       - name: Setup Gradle Wrapper
         run: |
           cd android
+          rm -f gradlew gradlew.bat
+          rm -rf gradle/wrapper
+          
+          mkdir -p gradle/wrapper
+          curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradle/wrapper/gradle-wrapper.jar
+          
+          cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.0.2-bin.zip
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOF
+          
+          curl -L -o gradlew https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradlew
           chmod +x gradlew
+          curl -L -o gradlew.bat https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradlew.bat
+          
           cd ..
       
       - name: Create local.properties
@@ -72,21 +89,13 @@ jobs:
           echo "keyAlias=datalake" >> keystore.properties
           echo "keyPassword=datalake123" >> keystore.properties
       
-      - name: Build APK with debug
+      - name: Build APK
         run: |
           cd android
-          chmod +x gradlew
-          ./gradlew assembleRelease --info --stacktrace
-      
-      - name: Check if APK was created
-        run: |
-          echo "Checking for APK files..."
-          find android -name "*.apk" 2>/dev/null || echo "No APK found"
-          ls -la android/app/build/outputs/apk/ 2>/dev/null || echo "No output directory"
+          ./gradlew assembleRelease --no-daemon
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: android/app/build/outputs/apk/release/*.apk
-        if: success()
