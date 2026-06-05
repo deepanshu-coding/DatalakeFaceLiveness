@@ -28,23 +28,6 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
       
-      - name: Patch react-native-gesture-handler
-        run: |
-          GESTURE_FILE="node_modules/react-native-gesture-handler/android/build.gradle"
-          if [ -f "$GESTURE_FILE" ]; then
-            # Add buildFeatures right after android {
-            sed -i '/android {/a\    buildFeatures {\n        buildConfig true\n    }' "$GESTURE_FILE"
-            echo "✓ Patched react-native-gesture-handler"
-            
-            # Verify the patch
-            echo "Verifying patch:"
-            grep -A 5 "buildFeatures" "$GESTURE_FILE" || echo "Warning: buildFeatures not found"
-          else
-            echo "Error: File not found - $GESTURE_FILE"
-            ls -la node_modules/react-native-gesture-handler/android/
-            exit 1
-          fi
-      
       - name: Setup Android SDK
         run: |
           export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
@@ -56,26 +39,10 @@ jobs:
           echo "8933bad05af43bd7f4b3dfbb81832d9787e68977" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
           echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
       
-      - name: Setup proper Gradle wrapper
+      - name: Setup Gradle wrapper
         run: |
           cd android
-          rm -f gradlew gradlew.bat
-          rm -rf gradle/wrapper
-          
-          mkdir -p gradle/wrapper
-          curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradle/wrapper/gradle-wrapper.jar
-          curl -L -o gradlew https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradlew
-          curl -L -o gradlew.bat https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradlew.bat
-          chmod +x gradlew gradlew.bat
-          
-          cat > gradle/wrapper/gradle-wrapper.properties << 'EOL'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.0.2-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOL
-          
+          chmod +x gradlew
           cd ..
       
       - name: Create local.properties
