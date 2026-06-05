@@ -28,52 +28,22 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
       
-      - name: Download real Gradle wrapper
+      - name: Setup Gradle wrapper
         run: |
           cd android
-          rm -f gradlew gradlew.bat
-          rm -rf gradle/wrapper
-          
-          mkdir -p gradle/wrapper
-          curl -L -o gradlew https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradlew
-          curl -L -o gradlew.bat https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradlew.bat
-          curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradle/wrapper/gradle-wrapper.jar
-          chmod +x gradlew gradlew.bat
-          
-          cat > gradle/wrapper/gradle-wrapper.properties << 'EOL'
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.0.2-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOL
+          chmod +x gradlew
           cd ..
       
-      - name: Setup Android SDK with correct NDK license
+      - name: Setup Android SDK
         run: |
           export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
           export ANDROID_HOME=$ANDROID_SDK_ROOT
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
           
-          # Create licenses directory
-          sudo mkdir -p $ANDROID_SDK_ROOT/licenses
-          
-          # Accept Android SDK license
-          echo "8933bad05af43bd7f4b3dfbb81832d9787e68977" | sudo tee $ANDROID_SDK_ROOT/licenses/android-sdk-license
-          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" | sudo tee -a $ANDROID_SDK_ROOT/licenses/android-sdk-license
-          
-          # Accept NDK license with correct format
-          printf "24333f8a63b6825ea9c5514f83c2829b004d1fee\nd56f5187479451eabf01fb78af6dfcb131a6481e\n" | sudo tee $ANDROID_SDK_ROOT/licenses/ndk-license
-          
-          # Set permissions
-          sudo chmod -R 777 $ANDROID_SDK_ROOT/licenses
-          
-          # Verify
-          echo "License files:"
-          ls -la $ANDROID_SDK_ROOT/licenses/
-          echo "NDK license:"
-          cat $ANDROID_SDK_ROOT/licenses/ndk-license
+          mkdir -p $ANDROID_SDK_ROOT/licenses
+          echo "8933bad05af43bd7f4b3dfbb81832d9787e68977" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
       
       - name: Create local.properties
         run: echo "sdk.dir=$ANDROID_HOME" > android/local.properties
@@ -105,7 +75,7 @@ jobs:
       - name: Build APK
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
