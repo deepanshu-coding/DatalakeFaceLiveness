@@ -72,14 +72,21 @@ jobs:
           echo "keyAlias=datalake" >> keystore.properties
           echo "keyPassword=datalake123" >> keystore.properties
       
-      - name: Build APK
+      - name: Build APK with debug
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --info --stacktrace
+      
+      - name: Check if APK was created
+        run: |
+          echo "Checking for APK files..."
+          find android -name "*.apk" 2>/dev/null || echo "No APK found"
+          ls -la android/app/build/outputs/apk/ 2>/dev/null || echo "No output directory"
       
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-release
           path: android/app/build/outputs/apk/release/*.apk
+        if: success()
