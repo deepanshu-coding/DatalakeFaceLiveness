@@ -39,10 +39,26 @@ jobs:
           echo "8933bad05af43bd7f4b3dfbb81832d9787e68977" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
           echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
       
-      - name: Setup Gradle Wrapper
+      - name: Setup proper Gradle wrapper
         run: |
           cd android
-          chmod +x gradlew
+          rm -f gradlew gradlew.bat
+          rm -rf gradle/wrapper
+          
+          mkdir -p gradle/wrapper
+          curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradle/wrapper/gradle-wrapper.jar
+          curl -L -o gradlew https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradlew
+          curl -L -o gradlew.bat https://raw.githubusercontent.com/gradle/gradle/v8.0.2/gradlew.bat
+          chmod +x gradlew gradlew.bat
+          
+          cat > gradle/wrapper/gradle-wrapper.properties << 'EOL'
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.0.2-bin.zip
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOL
+          
           cd ..
       
       - name: Create local.properties
